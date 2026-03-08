@@ -40,19 +40,12 @@
       overflow: hidden;
     }
 
-    /* TOP ROW: two input cards side by side */
-    .top-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      flex-shrink: 0;
-    }
-
     .card {
       background: rgba(255,255,255,0.03);
       border: 1px solid #1e3a5f;
       border-radius: 12px;
       padding: 12px;
+      flex-shrink: 0;
     }
 
     .card-label {
@@ -62,28 +55,62 @@
       margin-bottom: 8px;
     }
 
-    /* Compact gauge */
-    .gauge-wrap { display: flex; justify-content: center; margin-bottom: 8px; }
+    /* BATTERY CARD — horizontal layout */
+    .bat-card-inner {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .gauge-wrap { flex-shrink: 0; }
     .gauge-ring {
-      width: 80px; height: 80px; border-radius: 50%;
-      border: 7px solid transparent;
+      width: 72px; height: 72px; border-radius: 50%;
+      border: 6px solid transparent;
       display: flex; align-items: center; justify-content: center;
       transition: border-color 0.4s;
     }
     .gauge-inner {
-      width: 60px; height: 60px; border-radius: 50%;
+      width: 54px; height: 54px; border-radius: 50%;
       border: 2px solid;
       display: flex; flex-direction: column;
       align-items: center; justify-content: center;
       transition: border-color 0.4s;
     }
-    .gauge-pct { font-size: 20px; font-weight: bold; line-height: 1; transition: color 0.4s; }
-    .gauge-unit { font-size: 9px; color: #64748b; }
-    .gauge-ah { font-size: 8px; color: #475569; margin-top: 1px; }
+    .gauge-pct { font-size: 18px; font-weight: bold; line-height: 1; transition: color 0.4s; }
+    .gauge-unit { font-size: 8px; color: #64748b; }
+    .gauge-ah { font-size: 7px; color: #475569; margin-top: 1px; }
 
-    /* Power display */
-    .power-big { font-size: 28px; font-weight: bold; color: #f97316; text-align: center; margin: 4px 0 6px; }
-    .power-sub { font-size: 9px; color: #64748b; text-align: center; margin-bottom: 6px; }
+    .bat-slider-wrap { flex: 1; min-width: 0; }
+    .bat-slider-label {
+      display: flex; justify-content: space-between; align-items: baseline;
+      margin-bottom: 4px;
+    }
+    .bat-slider-label span:first-child { font-size: 9px; color: #64748b; }
+    .bat-slider-label span:last-child { font-size: 18px; font-weight: bold; transition: color 0.4s; }
+
+    /* POWER CARD — horizontal layout */
+    .pow-card-inner {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .power-big { font-size: 28px; font-weight: bold; color: #f97316; flex-shrink: 0; width: 72px; text-align: center; }
+    .pow-slider-wrap { flex: 1; min-width: 0; }
+    .pow-slider-label {
+      display: flex; justify-content: space-between; align-items: baseline;
+      margin-bottom: 4px;
+    }
+    .pow-slider-label span:first-child { font-size: 9px; color: #64748b; }
+
+    /* Slim bar */
+    .bar-bg {
+      height: 5px; background: #1e3a5f; border-radius: 3px;
+      position: relative; overflow: visible; margin: 4px 0 2px;
+    }
+    .bar-fill { height: 5px; border-radius: 3px; transition: width 0.3s, background-color 0.4s; }
+    .dod-line {
+      position: absolute; top: -3px; left: 20%;
+      width: 2px; height: 11px; background: #f59e0b; border-radius: 1px;
+    }
 
     /* Sliders */
     input[type=range] {
@@ -105,18 +132,7 @@
     #slider-battery::-moz-range-thumb { background: var(--bat-color, #22c55e); }
     #slider-watts::-webkit-slider-thumb { background: #f97316; }
     #slider-watts::-moz-range-thumb { background: #f97316; }
-    .slider-hint { font-size: 8px; color: #334155; text-align: center; margin-top: -2px; }
-
-    /* Slim bar */
-    .bar-bg {
-      height: 5px; background: #1e3a5f; border-radius: 3px;
-      position: relative; overflow: visible; margin: 4px 0 2px;
-    }
-    .bar-fill { height: 5px; border-radius: 3px; transition: width 0.3s, background-color 0.4s; }
-    .dod-line {
-      position: absolute; top: -3px; left: 20%;
-      width: 2px; height: 11px; background: #f59e0b; border-radius: 1px;
-    }
+    .slider-hint { font-size: 8px; color: #334155; margin-top: -2px; }
 
     /* STATS ROW */
     .stats-row { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 6px; }
@@ -191,12 +207,10 @@
 
 <main>
 
-  <!-- TOP ROW: Battery + Watts -->
-  <div class="top-row">
-
-    <!-- BATTERY CARD -->
-    <div class="card">
-      <div class="card-label">BATTERY LEVEL</div>
+  <!-- BATTERY CARD -->
+  <div class="card">
+    <div class="card-label">BATTERY LEVEL</div>
+    <div class="bat-card-inner">
       <div class="gauge-wrap">
         <div class="gauge-ring" id="gauge-ring">
           <div class="gauge-inner" id="gauge-inner">
@@ -206,36 +220,47 @@
           </div>
         </div>
       </div>
-      <div class="bar-bg">
-        <div class="bar-fill" id="bat-bar" style="width:23%"></div>
-        <div class="dod-line"></div>
+      <div class="bat-slider-wrap">
+        <div class="bat-slider-label">
+          <span>SET BATTERY %</span>
+          <span id="bat-pct-label" style="color:#22c55e">23%</span>
+        </div>
+        <div class="bar-bg">
+          <div class="bar-fill" id="bat-bar" style="width:23%"></div>
+          <div class="dod-line"></div>
+        </div>
+        <input type="range" id="slider-battery" min="1" max="100" value="23" />
+        <div class="slider-hint">1% — 100%</div>
       </div>
-      <input type="range" id="slider-battery" min="1" max="100" value="23" />
-      <div class="slider-hint">Set battery %</div>
     </div>
+  </div>
 
-    <!-- WATTS CARD -->
-    <div class="card">
-      <div class="card-label">POWER OUTPUT</div>
+  <!-- POWER CARD -->
+  <div class="card">
+    <div class="card-label">POWER OUTPUT</div>
+    <div class="pow-card-inner">
       <div class="power-big" id="watts-display">32W</div>
-      <div class="power-sub">Total Draw</div>
-      <div class="bar-bg" style="margin-bottom:0">
-        <div class="bar-fill" id="watts-bar" style="width:6.2%; background:#f97316"></div>
-      </div>
-      <input type="range" id="slider-watts" min="1" max="500" value="32" />
-      <div class="slider-hint">Set watts</div>
-      <div class="stats-row">
-        <div class="stat-box">
-          <div class="stat-label">A/h RATE</div>
-          <div class="stat-value" id="discharge-rate">2.50</div>
+      <div class="pow-slider-wrap">
+        <div class="pow-slider-label">
+          <span>SET WATTS</span>
         </div>
-        <div class="stat-box">
-          <div class="stat-label">TO 8AM</div>
-          <div class="stat-value" id="time-to-8am">—</div>
+        <div class="bar-bg" style="margin-bottom:0">
+          <div class="bar-fill" id="watts-bar" style="width:6.2%; background:#f97316"></div>
         </div>
+        <input type="range" id="slider-watts" min="1" max="500" value="32" />
+        <div class="slider-hint">1W — 500W</div>
       </div>
     </div>
-
+    <div class="stats-row">
+      <div class="stat-box">
+        <div class="stat-label">DISCHARGE RATE</div>
+        <div class="stat-value" id="discharge-rate">2.50 A/h</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">TIME TO 8AM</div>
+        <div class="stat-value" id="time-to-8am">—</div>
+      </div>
+    </div>
   </div>
 
   <!-- RESULT CARD -->
@@ -291,7 +316,7 @@
     if (!date) return '—';
     const isToday = date.getDate() === new Date().getDate();
     const t = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
-    return isToday ? t : t + '\n(tmrw)';
+    return isToday ? t : t + ' (tmrw)';
   }
 
   function formatHM(h) {
@@ -303,7 +328,6 @@
     const color = batColor(batteryPct);
     document.documentElement.style.setProperty('--bat-color', color);
 
-    // Gauge
     document.getElementById('gauge-pct').textContent = batteryPct;
     document.getElementById('gauge-pct').style.color = color;
     document.getElementById('gauge-ah').textContent = ((batteryPct / 100) * CAPACITY_AH).toFixed(1) + 'AH';
@@ -311,19 +335,18 @@
     document.getElementById('gauge-inner').style.borderColor = color;
     document.getElementById('bat-bar').style.width = batteryPct + '%';
     document.getElementById('bat-bar').style.background = color;
+    document.getElementById('bat-pct-label').textContent = batteryPct + '%';
+    document.getElementById('bat-pct-label').style.color = color;
 
-    // Watts
     document.getElementById('watts-display').textContent = watts + 'W';
     document.getElementById('watts-bar').style.width = (watts / 500 * 100) + '%';
 
-    // Discharge
     const rateAH = watts / VOLTAGE;
-    document.getElementById('discharge-rate').textContent = rateAH.toFixed(2);
+    document.getElementById('discharge-rate').textContent = rateAH.toFixed(2) + ' A/h';
 
     const hours8am = getHoursUntil8AM();
     document.getElementById('time-to-8am').textContent = formatHM(hours8am);
 
-    // Remaining at 8AM
     const currentAH = (batteryPct / 100) * CAPACITY_AH;
     const drained = rateAH * hours8am;
     const remainAH = Math.max(0, currentAH - drained);
@@ -350,7 +373,6 @@
       ? `${Math.abs(remainPct - 20).toFixed(1)}% below safe DOD limit!`
       : `${(remainPct - 20).toFixed(1)}% above 20% DOD`;
 
-    // Depletion
     let hoursTo0 = null, timeTo0 = null;
     if (watts > 0 && currentAH > 0) {
       hoursTo0 = currentAH / rateAH;
