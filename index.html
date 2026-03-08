@@ -2,174 +2,177 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>⚡ Solar Battery Monitor</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      background: linear-gradient(135deg, #0a0f1e 0%, #0d1b2a 50%, #0a1628 100%);
-      min-height: 100vh;
+      background: #0a0f1e;
+      height: 100dvh;
       font-family: 'Courier New', monospace;
       color: #e2e8f0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
     }
 
     header {
       background: #0f1e2e;
       border-bottom: 1px solid #1e4060;
-      padding: 16px 20px;
+      padding: 10px 16px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      position: sticky;
-      top: 0;
-      z-index: 10;
+      flex-shrink: 0;
     }
-
-    .header-sub { font-size: 9px; letter-spacing: 3px; color: #475569; }
-    .header-title { font-size: 17px; font-weight: bold; color: #7dd3fc; letter-spacing: 1.5px; margin-top: 2px; }
-    .header-right { text-align: right; }
-    .header-time-label { font-size: 9px; color: #475569; letter-spacing: 2px; }
-    .header-time { font-size: 15px; color: #94a3b8; font-weight: 600; }
+    .header-sub { font-size: 8px; letter-spacing: 2px; color: #475569; }
+    .header-title { font-size: 14px; font-weight: bold; color: #7dd3fc; letter-spacing: 1px; margin-top: 1px; }
+    .header-time { font-size: 13px; color: #94a3b8; font-weight: 600; }
+    .header-time-label { font-size: 8px; color: #475569; letter-spacing: 2px; text-align: right; }
 
     main {
-      max-width: 480px;
-      margin: 0 auto;
-      padding: 16px 16px 48px;
+      flex: 1;
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 8px;
+      padding: 8px 12px;
+      overflow: hidden;
+    }
+
+    /* TOP ROW: two input cards side by side */
+    .top-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      flex-shrink: 0;
     }
 
     .card {
       background: rgba(255,255,255,0.03);
       border: 1px solid #1e3a5f;
-      border-radius: 16px;
-      padding: 20px;
+      border-radius: 12px;
+      padding: 12px;
     }
 
     .card-label {
-      font-size: 9px;
-      letter-spacing: 3px;
+      font-size: 7px;
+      letter-spacing: 2.5px;
       color: #475569;
-      margin-bottom: 16px;
+      margin-bottom: 8px;
     }
 
-    /* GAUGE */
-    .gauge-wrap { display: flex; justify-content: center; margin-bottom: 20px; }
+    /* Compact gauge */
+    .gauge-wrap { display: flex; justify-content: center; margin-bottom: 8px; }
     .gauge-ring {
-      width: 150px; height: 150px; border-radius: 50%;
-      border: 12px solid transparent;
+      width: 80px; height: 80px; border-radius: 50%;
+      border: 7px solid transparent;
       display: flex; align-items: center; justify-content: center;
       transition: border-color 0.4s;
     }
     .gauge-inner {
-      width: 112px; height: 112px; border-radius: 50%;
-      border: 3px solid;
+      width: 60px; height: 60px; border-radius: 50%;
+      border: 2px solid;
       display: flex; flex-direction: column;
       align-items: center; justify-content: center;
       transition: border-color 0.4s;
     }
-    .gauge-pct { font-size: 38px; font-weight: bold; line-height: 1; transition: color 0.4s; }
-    .gauge-unit { font-size: 13px; color: #64748b; margin-top: -2px; }
-    .gauge-ah { font-size: 11px; color: #475569; margin-top: 3px; }
+    .gauge-pct { font-size: 20px; font-weight: bold; line-height: 1; transition: color 0.4s; }
+    .gauge-unit { font-size: 9px; color: #64748b; }
+    .gauge-ah { font-size: 8px; color: #475569; margin-top: 1px; }
 
-    /* BAR */
-    .bar-bg {
-      height: 8px; background: #1e3a5f; border-radius: 4px;
-      position: relative; overflow: visible; margin-bottom: 4px;
-    }
-    .bar-fill {
-      height: 8px; border-radius: 4px;
-      transition: width 0.3s, background-color 0.4s;
-    }
-    .dod-line {
-      position: absolute; top: -4px; left: 20%;
-      width: 2px; height: 16px;
-      background: #f59e0b; border-radius: 1px;
-    }
-    .bar-labels {
-      display: flex; justify-content: space-between;
-      font-size: 9px; color: #475569;
-      margin-bottom: 10px;
-    }
-    .bar-labels span:nth-child(2) { color: #f59e0b; }
+    /* Power display */
+    .power-big { font-size: 28px; font-weight: bold; color: #f97316; text-align: center; margin: 4px 0 6px; }
+    .power-sub { font-size: 9px; color: #64748b; text-align: center; margin-bottom: 6px; }
 
-    /* SLIDER */
+    /* Sliders */
     input[type=range] {
-      width: 100%; height: 36px; cursor: pointer;
+      width: 100%; height: 28px; cursor: pointer;
       -webkit-appearance: none; appearance: none;
       background: transparent; outline: none;
     }
     input[type=range]::-webkit-slider-runnable-track {
-      height: 6px; border-radius: 3px; background: #1e3a5f;
+      height: 5px; border-radius: 3px; background: #1e3a5f;
     }
     input[type=range]::-webkit-slider-thumb {
       -webkit-appearance: none; appearance: none;
-      width: 22px; height: 22px; border-radius: 50%;
-      margin-top: -8px; cursor: pointer;
-      transition: background 0.3s;
+      width: 20px; height: 20px; border-radius: 50%;
+      margin-top: -7.5px; cursor: pointer; transition: background 0.3s;
     }
-    input[type=range]::-moz-range-track {
-      height: 6px; border-radius: 3px; background: #1e3a5f;
-    }
-    input[type=range]::-moz-range-thumb {
-      width: 22px; height: 22px; border-radius: 50%;
-      border: none; cursor: pointer;
-    }
-    #slider-battery::-webkit-slider-thumb { background: var(--bat-color); }
-    #slider-battery::-moz-range-thumb { background: var(--bat-color); }
+    input[type=range]::-moz-range-track { height: 5px; border-radius: 3px; background: #1e3a5f; }
+    input[type=range]::-moz-range-thumb { width: 20px; height: 20px; border-radius: 50%; border: none; cursor: pointer; }
+    #slider-battery::-webkit-slider-thumb { background: var(--bat-color, #22c55e); }
+    #slider-battery::-moz-range-thumb { background: var(--bat-color, #22c55e); }
     #slider-watts::-webkit-slider-thumb { background: #f97316; }
     #slider-watts::-moz-range-thumb { background: #f97316; }
+    .slider-hint { font-size: 8px; color: #334155; text-align: center; margin-top: -2px; }
 
-    .slider-hint { font-size: 10px; color: #334155; text-align: center; margin-top: -4px; }
-
-    /* POWER */
-    .power-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
-    .power-label { font-size: 14px; color: #94a3b8; }
-    .power-value { font-size: 30px; font-weight: bold; color: #f97316; }
+    /* Slim bar */
+    .bar-bg {
+      height: 5px; background: #1e3a5f; border-radius: 3px;
+      position: relative; overflow: visible; margin: 4px 0 2px;
+    }
+    .bar-fill { height: 5px; border-radius: 3px; transition: width 0.3s, background-color 0.4s; }
+    .dod-line {
+      position: absolute; top: -3px; left: 20%;
+      width: 2px; height: 11px; background: #f59e0b; border-radius: 1px;
+    }
 
     /* STATS ROW */
-    .stats-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+    .stats-row { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 6px; }
     .stat-box {
       background: rgba(249,115,22,0.08);
-      border: 1px solid rgba(249,115,22,0.25);
-      border-radius: 10px; padding: 12px; text-align: center;
+      border: 1px solid rgba(249,115,22,0.2);
+      border-radius: 8px; padding: 7px; text-align: center;
     }
-    .stat-box.danger {
-      background: rgba(239,68,68,0.08);
-      border-color: rgba(239,68,68,0.25);
-    }
-    .stat-label { font-size: 9px; color: #f97316; letter-spacing: 1px; margin-bottom: 4px; }
-    .stat-box.danger .stat-label { color: #ef4444; }
-    .stat-value { font-size: 15px; font-weight: bold; color: #fed7aa; }
-    .stat-box.danger .stat-value { color: #fca5a5; }
+    .stat-label { font-size: 7px; color: #f97316; letter-spacing: 1px; margin-bottom: 2px; }
+    .stat-value { font-size: 13px; font-weight: bold; color: #fed7aa; }
 
     /* RESULT CARD */
     #result-card {
-      border: 2px solid; border-radius: 16px;
-      padding: 24px; text-align: center;
+      border: 2px solid; border-radius: 12px;
+      padding: 10px 14px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
       transition: border-color 0.4s, background 0.4s, box-shadow 0.4s;
       animation: pulse 1.8s ease-in-out infinite;
     }
     @keyframes pulse {
       0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.02); }
+      50% { transform: scale(1.01); }
     }
-    .result-badge { font-size: 10px; letter-spacing: 1.5px; font-weight: bold; margin-bottom: 6px; transition: color 0.4s; }
-    .result-sub { font-size: 9px; color: #475569; letter-spacing: 2px; margin-bottom: 8px; }
-    .result-pct { font-size: 64px; font-weight: bold; line-height: 1; transition: color 0.4s; }
-    .result-pct span { font-size: 24px; }
+    .result-left { min-width: 0; }
+    .result-badge { font-size: 8px; letter-spacing: 1px; font-weight: bold; transition: color 0.4s; margin-bottom: 2px; }
+    .result-sub { font-size: 7px; color: #475569; letter-spacing: 1.5px; margin-bottom: 4px; }
+    .result-msg { font-size: 9px; font-weight: 600; transition: color 0.4s; margin-top: 4px; }
     .result-bar-bg {
-      width: 100%; height: 8px; background: #1e3a5f;
-      border-radius: 4px; margin: 16px 0 4px; position: relative; overflow: visible;
+      height: 5px; background: #1e3a5f; border-radius: 3px;
+      position: relative; overflow: visible; margin-top: 6px;
     }
-    .result-bar-fill { height: 8px; border-radius: 4px; transition: width 0.4s, background 0.4s; }
-    .result-msg { font-size: 12px; font-weight: 600; text-align: center; margin-top: 8px; transition: color 0.4s; }
+    .result-bar-fill { height: 5px; border-radius: 3px; transition: width 0.4s, background 0.4s; }
+    .result-right { text-align: right; flex-shrink: 0; }
+    .result-pct { font-size: 44px; font-weight: bold; line-height: 1; transition: color 0.4s; }
+    .result-pct span { font-size: 18px; }
+
+    /* DEPLETION ROW */
+    .depletion-row {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+      flex-shrink: 0;
+    }
+    .dep-box {
+      background: rgba(239,68,68,0.08);
+      border: 1px solid rgba(239,68,68,0.2);
+      border-radius: 10px; padding: 8px; text-align: center;
+    }
+    .dep-label { font-size: 7px; color: #ef4444; letter-spacing: 1px; margin-bottom: 2px; }
+    .dep-value { font-size: 14px; font-weight: bold; color: #fca5a5; }
 
     footer {
-      text-align: center; font-size: 10px; color: #1e3a5f;
-      line-height: 1.7; padding: 0 20px;
+      text-align: center; font-size: 8px; color: #1e3a5f;
+      padding: 4px 0 6px; flex-shrink: 0;
     }
   </style>
 </head>
@@ -180,7 +183,7 @@
     <div class="header-sub">GENTAI 12.8V 100AH LiFePO4</div>
     <div class="header-title">⚡ SOLAR BATTERY MONITOR</div>
   </div>
-  <div class="header-right">
+  <div>
     <div class="header-time-label">NOW</div>
     <div class="header-time" id="clock">—</div>
   </div>
@@ -188,81 +191,82 @@
 
 <main>
 
-  <!-- BATTERY LEVEL -->
-  <div class="card">
-    <div class="card-label">CURRENT BATTERY LEVEL</div>
-    <div class="gauge-wrap">
-      <div class="gauge-ring" id="gauge-ring">
-        <div class="gauge-inner" id="gauge-inner">
-          <div class="gauge-pct" id="gauge-pct">23</div>
-          <div class="gauge-unit">%</div>
-          <div class="gauge-ah" id="gauge-ah">23.0 AH</div>
+  <!-- TOP ROW: Battery + Watts -->
+  <div class="top-row">
+
+    <!-- BATTERY CARD -->
+    <div class="card">
+      <div class="card-label">BATTERY LEVEL</div>
+      <div class="gauge-wrap">
+        <div class="gauge-ring" id="gauge-ring">
+          <div class="gauge-inner" id="gauge-inner">
+            <div class="gauge-pct" id="gauge-pct">23</div>
+            <div class="gauge-unit">%</div>
+            <div class="gauge-ah" id="gauge-ah">23.0AH</div>
+          </div>
+        </div>
+      </div>
+      <div class="bar-bg">
+        <div class="bar-fill" id="bat-bar" style="width:23%"></div>
+        <div class="dod-line"></div>
+      </div>
+      <input type="range" id="slider-battery" min="1" max="100" value="23" />
+      <div class="slider-hint">Set battery %</div>
+    </div>
+
+    <!-- WATTS CARD -->
+    <div class="card">
+      <div class="card-label">POWER OUTPUT</div>
+      <div class="power-big" id="watts-display">32W</div>
+      <div class="power-sub">Total Draw</div>
+      <div class="bar-bg" style="margin-bottom:0">
+        <div class="bar-fill" id="watts-bar" style="width:6.2%; background:#f97316"></div>
+      </div>
+      <input type="range" id="slider-watts" min="1" max="500" value="32" />
+      <div class="slider-hint">Set watts</div>
+      <div class="stats-row">
+        <div class="stat-box">
+          <div class="stat-label">A/h RATE</div>
+          <div class="stat-value" id="discharge-rate">2.50</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">TO 8AM</div>
+          <div class="stat-value" id="time-to-8am">—</div>
         </div>
       </div>
     </div>
-    <div class="bar-bg">
-      <div class="bar-fill" id="bat-bar" style="width:23%"></div>
-      <div class="dod-line"></div>
-    </div>
-    <div class="bar-labels">
-      <span>0%</span><span>◀ 20% DOD</span><span>100%</span>
-    </div>
-    <input type="range" id="slider-battery" min="1" max="100" value="23" />
-    <div class="slider-hint">Drag to set current battery %</div>
+
   </div>
 
-  <!-- POWER OUTPUT -->
-  <div class="card">
-    <div class="card-label">POWER DRAW / OUTPUT</div>
-    <div class="power-row">
-      <span class="power-label">Total Output</span>
-      <span class="power-value" id="watts-display">32 W</span>
-    </div>
-    <input type="range" id="slider-watts" min="1" max="500" value="32" />
-    <div class="slider-hint">Drag to set watt consumption</div>
-    <div class="stats-row">
-      <div class="stat-box">
-        <div class="stat-label">DISCHARGE RATE</div>
-        <div class="stat-value" id="discharge-rate">2.50 A/h</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-label">TIME TO 8AM</div>
-        <div class="stat-value" id="time-to-8am">—</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- RESULT -->
+  <!-- RESULT CARD -->
   <div id="result-card">
-    <div class="result-badge" id="result-badge">⚡ CALCULATING...</div>
-    <div class="result-sub">BATTERY LEVEL AT 8:00 AM TOMORROW</div>
-    <div class="result-pct" id="result-pct">—<span>%</span></div>
-    <div class="result-bar-bg">
-      <div class="result-bar-fill" id="result-bar"></div>
-      <div class="dod-line"></div>
+    <div class="result-left">
+      <div class="result-badge" id="result-badge">⚡ CALCULATING...</div>
+      <div class="result-sub">BATTERY AT 8:00 AM TOMORROW</div>
+      <div class="result-bar-bg">
+        <div class="result-bar-fill" id="result-bar" style="width:0%"></div>
+        <div class="dod-line"></div>
+      </div>
+      <div class="result-msg" id="result-msg">—</div>
     </div>
-    <div class="result-msg" id="result-msg">—</div>
-  </div>
-
-  <!-- DEPLETION FORECAST -->
-  <div class="card">
-    <div class="card-label">BATTERY DEPLETION FORECAST</div>
-    <div class="stats-row">
-      <div class="stat-box danger">
-        <div class="stat-label">REACHES 0% AT</div>
-        <div class="stat-value" id="zero-time">—</div>
-      </div>
-      <div class="stat-box danger">
-        <div class="stat-label">HOURS REMAINING</div>
-        <div class="stat-value" id="hours-remaining">—</div>
-      </div>
+    <div class="result-right">
+      <div class="result-pct" id="result-pct">—<span>%</span></div>
     </div>
   </div>
 
-  <footer>
-    Gentai 12.8V 100AH LiFePO4 · DOD: 20%<br>
-    Next solar charge: 8:00 AM · Updates every 30s
-  </footer>
+  <!-- DEPLETION -->
+  <div class="depletion-row">
+    <div class="dep-box">
+      <div class="dep-label">REACHES 0% AT</div>
+      <div class="dep-value" id="zero-time">—</div>
+    </div>
+    <div class="dep-box">
+      <div class="dep-label">HOURS REMAINING</div>
+      <div class="dep-value" id="hours-remaining">—</div>
+    </div>
+  </div>
+
+  <footer>Gentai 12.8V 100AH LiFePO4 · DOD 20% · Next charge 8:00 AM</footer>
 
 </main>
 
@@ -274,11 +278,10 @@
   let batteryPct = 23;
   let watts = 32;
 
-  const batColor = (pct) => pct < 20 ? '#ef4444' : pct < 40 ? '#f59e0b' : '#22c55e';
+  const batColor = p => p < 20 ? '#ef4444' : p < 40 ? '#f59e0b' : '#22c55e';
 
   function getHoursUntil8AM() {
-    const now = new Date();
-    const target = new Date();
+    const now = new Date(), target = new Date();
     target.setHours(8, 0, 0, 0);
     if (now.getHours() >= 8) target.setDate(target.getDate() + 1);
     return (target - now) / 3600000;
@@ -288,45 +291,41 @@
     if (!date) return '—';
     const isToday = date.getDate() === new Date().getDate();
     const t = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
-    return isToday ? t : t + ' (tmrw)';
+    return isToday ? t : t + '\n(tmrw)';
   }
 
   function formatHM(h) {
-    if (!h) return '—';
+    if (!h || h <= 0) return '—';
     return `${Math.floor(h)}h ${Math.round((h % 1) * 60)}m`;
   }
 
   function update() {
     const color = batColor(batteryPct);
-
-    // CSS variable for slider thumb
     document.documentElement.style.setProperty('--bat-color', color);
 
     // Gauge
     document.getElementById('gauge-pct').textContent = batteryPct;
     document.getElementById('gauge-pct').style.color = color;
-    document.getElementById('gauge-ah').textContent = ((batteryPct / 100) * CAPACITY_AH).toFixed(1) + ' AH';
+    document.getElementById('gauge-ah').textContent = ((batteryPct / 100) * CAPACITY_AH).toFixed(1) + 'AH';
     document.getElementById('gauge-ring').style.borderColor = color + '44';
     document.getElementById('gauge-inner').style.borderColor = color;
-
-    // Battery bar
     document.getElementById('bat-bar').style.width = batteryPct + '%';
     document.getElementById('bat-bar').style.background = color;
 
     // Watts
-    document.getElementById('watts-display').textContent = watts + ' W';
+    document.getElementById('watts-display').textContent = watts + 'W';
+    document.getElementById('watts-bar').style.width = (watts / 500 * 100) + '%';
 
-    // Discharge rate
-    const rateAH = (watts / VOLTAGE).toFixed(2);
-    document.getElementById('discharge-rate').textContent = rateAH + ' A/h';
+    // Discharge
+    const rateAH = watts / VOLTAGE;
+    document.getElementById('discharge-rate').textContent = rateAH.toFixed(2);
 
-    // Hours to 8AM
     const hours8am = getHoursUntil8AM();
     document.getElementById('time-to-8am').textContent = formatHM(hours8am);
 
     // Remaining at 8AM
     const currentAH = (batteryPct / 100) * CAPACITY_AH;
-    const drained = (watts / VOLTAGE) * hours8am;
+    const drained = rateAH * hours8am;
     const remainAH = Math.max(0, currentAH - drained);
     const remainPct = (remainAH / CAPACITY_AH) * 100;
     const isCritical = remainPct < DOD;
@@ -335,14 +334,12 @@
     document.getElementById('result-pct').innerHTML = remainPct.toFixed(1) + '<span>%</span>';
     document.getElementById('result-pct').style.color = rColor;
     document.getElementById('result-card').style.borderColor = rColor;
-    document.getElementById('result-card').style.background = isCritical
-      ? 'rgba(239,68,68,0.12)' : 'rgba(34,197,94,0.10)';
-    document.getElementById('result-card').style.boxShadow = isCritical
-      ? '0 0 30px rgba(239,68,68,0.2)' : '0 0 30px rgba(34,197,94,0.15)';
+    document.getElementById('result-card').style.background = isCritical ? 'rgba(239,68,68,0.12)' : 'rgba(34,197,94,0.10)';
+    document.getElementById('result-card').style.boxShadow = isCritical ? '0 0 20px rgba(239,68,68,0.2)' : '0 0 20px rgba(34,197,94,0.12)';
 
     const badge = document.getElementById('result-badge');
     badge.style.color = rColor;
-    badge.textContent = isCritical ? '⚠  WARNING — BELOW DOD THRESHOLD' : '✓  SAFE — ABOVE DOD THRESHOLD';
+    badge.textContent = isCritical ? '⚠ WARNING — BELOW DOD THRESHOLD' : '✓ SAFE — ABOVE DOD THRESHOLD';
 
     document.getElementById('result-bar').style.width = Math.min(remainPct, 100) + '%';
     document.getElementById('result-bar').style.background = rColor;
@@ -350,13 +347,13 @@
     const msg = document.getElementById('result-msg');
     msg.style.color = rColor;
     msg.textContent = isCritical
-      ? `Will drop ${Math.abs(remainPct - 20).toFixed(1)}% below safe DOD limit!`
-      : `${(remainPct - 20).toFixed(1)}% margin above 20% DOD limit`;
+      ? `${Math.abs(remainPct - 20).toFixed(1)}% below safe DOD limit!`
+      : `${(remainPct - 20).toFixed(1)}% above 20% DOD`;
 
-    // Time to 0%
+    // Depletion
     let hoursTo0 = null, timeTo0 = null;
     if (watts > 0 && currentAH > 0) {
-      hoursTo0 = currentAH / (watts / VOLTAGE);
+      hoursTo0 = currentAH / rateAH;
       timeTo0 = new Date(Date.now() + hoursTo0 * 3600000);
     }
     document.getElementById('zero-time').textContent = formatTime(timeTo0);
@@ -364,24 +361,19 @@
   }
 
   function updateClock() {
-    const now = new Date();
-    document.getElementById('clock').textContent = now.toLocaleTimeString([], {
+    document.getElementById('clock').textContent = new Date().toLocaleTimeString([], {
       hour: '2-digit', minute: '2-digit', hour12: true
     });
   }
 
   document.getElementById('slider-battery').addEventListener('input', e => {
-    batteryPct = Number(e.target.value);
-    update();
+    batteryPct = Number(e.target.value); update();
   });
-
   document.getElementById('slider-watts').addEventListener('input', e => {
-    watts = Number(e.target.value);
-    update();
+    watts = Number(e.target.value); update();
   });
 
-  updateClock();
-  update();
+  updateClock(); update();
   setInterval(updateClock, 1000);
   setInterval(update, 30000);
 </script>
